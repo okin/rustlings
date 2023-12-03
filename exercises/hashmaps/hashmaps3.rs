@@ -14,8 +14,6 @@
 
 // Execute `rustlings hint hashmaps3` or use the `hint` watch subcommand for a hint.
 
-// I AM NOT DONE
-
 use std::collections::HashMap;
 
 // A structure to store team name and its goal details.
@@ -29,17 +27,45 @@ fn build_scores_table(results: String) -> HashMap<String, Team> {
     // The name of the team is the key and its associated struct is the value.
     let mut scores: HashMap<String, Team> = HashMap::new();
 
+    fn update_team_scores(scoretable: & mut HashMap<String, Team>, team: Team) {
+        let team_name = &team.name.to_string();
+
+        match scoretable.get(team_name) {
+            Some(existing_team) => {
+                let updated_team = Team {
+                    goals_scored: team.goals_scored + existing_team.goals_scored,
+                    goals_conceded: team.goals_conceded + existing_team.goals_conceded,
+                    ..team
+                };
+
+                scoretable.insert(team_name.to_string(), updated_team);
+            }
+            _ => {
+                scoretable.insert(team_name.to_string(), team);
+            }
+        }
+    }
+
     for r in results.lines() {
         let v: Vec<&str> = r.split(',').collect();
         let team_1_name = v[0].to_string();
         let team_1_score: u8 = v[2].parse().unwrap();
         let team_2_name = v[1].to_string();
         let team_2_score: u8 = v[3].parse().unwrap();
-        // TODO: Populate the scores table with details extracted from the
-        // current line. Keep in mind that goals scored by team_1
-        // will be number of goals conceded from team_2, and similarly
-        // goals scored by team_2 will be the number of goals conceded by
-        // team_1.
+
+        let first_team = Team {
+            name: team_1_name,
+            goals_scored: team_1_score,
+            goals_conceded: team_2_score
+        };
+        update_team_scores(&mut scores, first_team);
+
+        let second_team = Team {
+            name: team_2_name,
+            goals_scored: team_2_score,
+            goals_conceded: team_1_score
+        };
+        update_team_scores(&mut scores, second_team);
     }
     scores
 }
